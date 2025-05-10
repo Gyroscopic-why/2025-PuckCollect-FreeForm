@@ -87,7 +87,7 @@ void intakeUpdate()
 
         if (_separartorDefendTimer.seconds() > BRUSH_DEFEND_TIMER)
         {
-            _targetSeparatorPos -= sgn(separatorErr) * SEPARATOR_MOTOR_STEP;
+            _targetSeparatorPos -= sign(separatorErr) * SEPARATOR_MOTOR_STEP;
             _separartorDefendTimer.reset();
         }
     }

@@ -2,27 +2,51 @@
 
 #include <Arduino.h>
 
-class ElapseTime{
-private:
-    uint64_t _resetMicros = 0;
-public:
-    ElapseTime(){
-        _resetMicros = micros();
-    }
+class Timer
+{
+  private:
+    uint64_t _lastMicros = 0;
 
-    void reset(){
-        _resetMicros = micros();
+  public:
+    void Reset()
+    {
+        _lastMicros = micros();
     }
+    //  Reset the last saved time to current
 
-    uint64_t timeMicros(){
-        return micros() - _resetMicros;
-    }
+    uint64_t TimeMicroseconds(bool reset)
+    {
+        //  Calculate delta time (elapsed)
+        uint64_t elapsedMicroseconds = micros() - _lastMicros;
+        
+        //  Reset last time save (optional)
+        if (reset) Reset();
 
-    float milliseconds(){
-        return timeMicros() / 1000.0f;
+        return elapsedMicroseconds;
     }
+    //  Return elapsed microseconds
 
-    float seconds(){
-        return timeMicros() / 1000000.0f;
+    float TimeMilliseconds(bool reset)
+    {
+        //  Calculate delta time (elapsed)
+        uint64_t elapsedMicroseconds = micros() - _lastMicros;
+        
+        //  Reset last time save (optional)
+        if (reset) Reset();
+        
+        return elapsedMicroseconds / 1000.0f;
     }
+    //  Return elapsed milliseconds
+
+    float TimeSeconds(bool reset)
+    {
+        //  Calculate delta time (elapsed)
+        uint64_t elapsedMicroseconds = micros() - _lastMicros;
+        
+        //  Reset last time save (optional)
+        if (reset) Reset();
+        
+        return elapsedMicroseconds / 1000000.0f;
+    }
+    //  Return elapsed seconds
 };
