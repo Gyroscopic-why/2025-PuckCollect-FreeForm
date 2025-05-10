@@ -1,0 +1,40 @@
+#pragma once
+#include <Arduino.h>
+
+//DriveTrain
+#define IS_GYRO false
+#define IS_DISTANCE_SENSOR true
+#define WHEEL_DISTANCE 268
+
+#define ROBOT_SPEED 0.3f
+#define ETALON_DISTANCE 20.0f
+
+#define ANGLE_ERROR 2.5f
+#define SINGLE_ENCODER_STEP (20 * 24)
+
+#define BASE_STEP_COUNT 8
+
+#define EXECUTION_LIMIT 40.0
+#define TIME_ERROR 1.0
+
+//Intake
+#define CLAMP_SERVO_CALMP_POS 0
+#define CLAMP_SERVO_UNCLAMP_POS 20
+
+#define CLAMP_OPEN_TIMER 0.5f
+
+#define SEPARATOR_P 0.1f
+#define SEPARATOR_D 0.0f
+
+#define SEPARATOR_MAX_POWER 0.7
+#define SEPARATOR_MOTOR_STEP 720 / 3
+
+#define COLOR_SENSOR_CLAMP_SENS 10
+#define COLOR_SENSOR_SEPARARTOR_SENS 10
+
+#define SEPARATOR_SENS 50
+
+#define BRUSH_SERVO_SPEED 45
+#define BRUSH_MOTOR_POWER 0.5f
+
+#define BRUSH_DEFEND_TIMER 1.0f
