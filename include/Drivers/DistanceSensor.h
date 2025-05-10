@@ -10,7 +10,7 @@
 
 #define DISTANCE_SENSOR_UPDATE_TIME 6
 
-class DistanceSensor{
+class HCSR04_DistanceSensor{
 private:
     uint8_t _triggerPin, _echoPin;
     uint32_t _lastUpdateTimer = 0;
@@ -18,7 +18,7 @@ private:
     uint16_t _lastDistance = 0, _minimumDistance = 0;
 
 public:
-    DistanceSensor(uint8_t triggerPin, uint8_t echoPin, uint16_t minimumDistance = 0){
+    HCSR04_DistanceSensor(uint8_t triggerPin, uint8_t echoPin, uint16_t minimumDistance = 0){
         _triggerPin = triggerPin;
         _echoPin = echoPin;
         _minimumDistance = minimumDistance;

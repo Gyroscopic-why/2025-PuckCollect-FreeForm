@@ -10,70 +10,113 @@
 #include "Drivers/DistanceSensor.h"
 #include "Drivers/Button.h"
 
+
+
 HardwareWire hardwareWire;
 SoftwareWire softwareWire(2, 3);
 
-DcExpansion dcExpansion1(1, &hardwareWire);
-DcExpansion dcExpansion3(3, &hardwareWire);
 
-DcMotor brushMotor(&dcExpansion3, 1);
-DcMotor separatorMotor(&dcExpansion3, 2);
+//  Init hardware logic modules
+//  Main prizm also acts like an expansion
+DcExpansion dcPrizm1   (5, &hardwareWire);
+DcExpansion dcExp1port2(2, &hardwareWire);
+DcExpansion dcExp2port3(3, &hardwareWire);
 
-DcMotor motorTL(&dcExpansion1, 1);
-DcMotor motorBL(&dcExpansion1, 2);
+
+//  Fill prizm (main / expansion 1)
+DcMotor brushMotor    (&dcPrizm1, 1);
+DcMotor separatorMotor(&dcPrizm1, 2);
+
+
+//  Fill expansion No1 (port 2)
+DcMotor motorTL(&dcExp1port2, 1);
+DcMotor motorBL(&dcExp1port2, 2);
 //  TL - top left motor
 //  BL - bottom left motor
 
-DcMotor motorTR(&dcExpansion3, 1);
-DcMotor motorBR(&dcExpansion3, 2);
+
+//  Fill expansion No2 (port 3)
+DcMotor motorTR(&dcExp2port3, 1);
+DcMotor motorBR(&dcExp2port3, 2);
 //  TR - top right motor
 //  BR - bottom right motor
 
 
 
-TCS34725ColorSensor separatorColorSensor(&hardwareWire);
-TCS34725ColorSensor floorColorSenor(&softwareWire);
+TCS34725_ColorSensor separatorColorSensor(&hardwareWire);
+TCS34725_ColorSensor floorColorSenor(&softwareWire);
 
-DistanceSensor forwardDistanceSensor(4, 5);
-DistanceSensor leftDistanceSensor(6, 7);
-DistanceSensor rightDistanceSensor(8, 9);
-DistanceSensor backwardDistanceSensor(10, 11);
 
-BNO055Gyro gyro(&hardwareWire);
+/*  Sonars on the robot
+
+               Front
+                
+        ________0-0________
+          0_____________0
+Left    0/_______________\0    Right
+        ___________________
+        ___________________
+        ___________________
+        ________0-0________
+
+               Back               */
+
+
+HCSR04_DistanceSensor frontSonar(4, 5);
+HCSR04_DistanceSensor rightSonar(6, 7);
+HCSR04_DistanceSensor  leftSonar(8, 9);
+HCSR04_DistanceSensor  backSonar(10, 11);
+
+
+BNO055_Gyro gyroscope(&hardwareWire);
 
 Button startButton(2);
+
+
 
 Servo clampServo;
 Servo brushServoLeft, brushServoRight;
 
-void DevicesBegin(){
+
+void DevicesBegin()
+{
     // clampServo.attach(11);
 
     // brushServoLeft.attach(12);
     // brushServoRight.attach(13);
 
-    hardwareWire.begin();
+    
+    // separatorColorSensor.Begin();
+    // floorColorSensor.Begin();
+
+    // frontSonar.Begin();
+    // rigthSonar.Begin();
+    //  leftSonar.Begin();
+    //  backSonar.Begin();
+
+    // gyroscope.begin();
+
+    
     // softwareWire.begin();
+    hardwareWire.begin();
 
-    dcExpansion1.begin();
-    dcExpansion3.begin();
 
-    // separatorColorSensor.begin();
-    // clampColorSenor.begin();
-
-    // forwardDistanceSensor.begin();
-    // leftDistanceSensor.begin();
-    // rightDistanceSensor.begin();
+    dcExp1port2.begin();
+    dcExp2port3.begin();
 
     startButton.begin();
 
-    // gyro.begin();
 
+
+    //  Reset motor encoders
     motorTL.begin();
     motorBL.begin();
+        //  Left wheel
 
     motorTR.begin();
     motorBR.begin();
+        //  Right wheel
+
 
 
     brushMotor.begin();

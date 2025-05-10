@@ -66,7 +66,7 @@ struct Color
     }
 };
 
-class TCS34725ColorSensor
+class TCS34725_ColorSensor
 {
 private:
     IWire *_wire;
@@ -74,7 +74,7 @@ private:
     uint8_t _gain, _integrationTime;
 
 public:
-    TCS34725ColorSensor(IWire *wire, uint8_t gain = TCS34725_GAIN_1X, uint8_t integrationTime = TCS34725_INTEGRATIONTIME_2_4MS)
+    TCS34725_ColorSensor(IWire *wire, uint8_t gain = TCS34725_GAIN_1X, uint8_t integrationTime = TCS34725_INTEGRATIONTIME_2_4MS)
     {
         _wire = wire;
         _gain = gain;
