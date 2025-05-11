@@ -64,7 +64,7 @@ struct Oriantation{
     }
 };
 
-class BNO055_Gyro
+class BNO055_Gyroscope
 {
 private:
     IWire *_wire;
@@ -88,7 +88,7 @@ private:
     }
 
 public:
-    BNO055_Gyro(IWire *wire, AngleUnit angleUnit = DEGREES){
+    BNO055_Gyroscope(IWire *wire, AngleUnit angleUnit = DEGREES){
         _wire = wire;
         _angleUnit = angleUnit;
     }

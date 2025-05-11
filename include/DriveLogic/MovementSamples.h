@@ -7,34 +7,84 @@
 #include "Devices.h"
 
 #define MAX_SPEED 1.0f
+#define ERROR_VALUE_KOEFFICIENT 0.8f
 
-void Drive(float turn)
+
+enum wheelType
 {
-    float encoderTL = motorTL.getCurrentPosition();
-    float encoderBL = motorBL.getCurrentPosition();
-    //  Get left wheel motors encoders
-
-    float encoderTR = motorTR.getCurrentPosition();
-    float encoderBR = motorBR.getCurrentPosition();
-    //  Get right wheel motors encoders
+    left = true,
+    right = false
+};
 
 
-    float errorLS = encoderTL - encoderBL;
-    float errorRS = encoderTR - encoderBR;
-    //  Errors for the right and left sides of the robor wheels
-    //  When the motor speed is not perfect and differs
+void DriveSample(float turnDir, float dirError, float lwError, float rwError)
+{
+    //  turnDir  = Turn  in    direction
+    //  dirError = error for   the current robot direction
+    //  lwError  = left  wheel error
+    //  rwError  = right wheel error
 
 
-    float maxError = (  max ( abs(errorLS),  abs(errorRS) )  + abs(turn) ) / 2.0f;
+    float tlError = (  lwError + dirError + turnDir )  /  2.0f;
+    float blError = ( -lwError + dirError - turnDir )  /  2.0f;
+    //  ---  Top Left and Bottom Left motor errors  ---  //
+    //  For the drifting of a single wheel 
+    //  (proposed to the straight moving of the other wheel)
+
+    float trError = (  rwError - dirError + turnDir )  /  2.0f;
+    float brError = ( -rwError - dirError - turnDir )  /  2.0f;
+    //  ---  Top Right and Bottom Right motor errors  ---  //
+    //  For the drifting of a single wheel 
+    //  (proposed to the straight moving of the other wheel)
+
+
+    
+    float maxError = max(  max(tlError, blError),  max(trError, brError)  );
     //  Calculate the max error for maintaining the max speed
 
 
+
     //-------------  Apply power  ---------------------------------//
-    motorTL.setPower(MAX_SPEED - maxError + (errorLS + turn) / 2.0f);
-    motorBL.setPower(MAX_SPEED - maxError - (errorLS + turn) / 2.0f);
+
+    driveMotorTL.setPower( MAX_SPEED - maxError + tlError );
+    driveMotorBL.setPower( MAX_SPEED - maxError + blError );
     //  Left wheel
 
-    motorTR.setPower(MAX_SPEED - maxError + (errorRS + turn) / 2.0f);
-    motorBR.setPower(MAX_SPEED - maxError - (errorRS + turn) / 2.0f);
+    driveMotorTR.setPower( MAX_SPEED - maxError + trError );
+    driveMotorBR.setPower( MAX_SPEED - maxError + brError );
     //  Right wheel
+
+
+    //  Note: 
+    //  - Even though or robot is using a double swerve
+    //    The motors control the movement inverse in reference to the real swerve behaviour:
+    //      ^^ Same wheel motors spin in the same direction      (++ or --)  = forward 1 wheel
+    //      <> Same wheel motors spin in the opposite direction  (+- or -+)  = turning 1 wheel
 }
+
+
+float GetDriveWheelError(wheelType driveWheel)
+{
+    float error;
+
+    if (driveWheel)  //  If the left wheel is selected for the error calculation
+    {
+        float encoderTL = driveMotorTL.getCurrentPosition();
+        float encoderBL = driveMotorBL.getCurrentPosition();
+        //  Get left wheel motors encoders
+
+        error = encoderTL - encoderBL;
+    }
+
+    else             //  Right wheel is selected
+    {
+        float encoderTR = driveMotorTR.getCurrentPosition();
+        float encoderBR = driveMotorBR.getCurrentPosition();
+        //  Get right wheel motors encoders
+
+        error = encoderTR - encoderBR;
+    }
+
+    return error;
+}
+
