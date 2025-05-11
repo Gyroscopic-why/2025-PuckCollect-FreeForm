@@ -84,7 +84,7 @@ HCSR04_DistanceSensor  backSonar(10, 11);
 
 
 BNO055_Gyroscope  BN_gyro(&hardwareWire);
-MPU9250_Gyroscope MPU_gyro();
+MPU9250_Gyroscope MPU_gyro;
 
 
 Button startButton(2);
