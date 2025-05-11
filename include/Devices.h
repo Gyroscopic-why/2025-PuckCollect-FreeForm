@@ -3,11 +3,16 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+
 #include "Drivers/DcMotor.h"
 #include "Drivers/MultiWire.h"
-#include "Drivers/BNO055_Gyroscope.h"
+
 #include "Drivers/ColorSensor.h"
 #include "Drivers/DistanceSensor.h"
+
+#include "Drivers/BNO055_Gyroscope.h"
+#include "Drivers/MPU9250_Gyroscope.h"
+
 #include "Drivers/Button.h"
 
 
@@ -78,7 +83,9 @@ HCSR04_DistanceSensor  leftSonar(8, 9);
 HCSR04_DistanceSensor  backSonar(10, 11);
 
 
-BNO055_Gyroscope gyro(&hardwareWire);
+BNO055_Gyroscope  BN_gyro(&hardwareWire);
+MPU9250_Gyroscope MPU_gyro();
+
 
 Button startButton(2);
 

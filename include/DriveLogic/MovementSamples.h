@@ -10,12 +10,6 @@
 #define ERROR_VALUE_KOEFFICIENT 0.8f
 
 
-enum wheelType
-{
-    left = true,
-    right = false
-};
-
 
 void DriveSample(float turnDir, float dirError, float lwError, float rwError)
 {
@@ -63,28 +57,4 @@ void DriveSample(float turnDir, float dirError, float lwError, float rwError)
 }
 
 
-float GetDriveWheelError(wheelType driveWheel)
-{
-    float error;
-
-    if (driveWheel)  //  If the left wheel is selected for the error calculation
-    {
-        float encoderTL = driveMotorTL.getCurrentPosition();
-        float encoderBL = driveMotorBL.getCurrentPosition();
-        //  Get left wheel motors encoders
-
-        error = encoderTL - encoderBL;
-    }
-
-    else             //  Right wheel is selected
-    {
-        float encoderTR = driveMotorTR.getCurrentPosition();
-        float encoderBR = driveMotorBR.getCurrentPosition();
-        //  Get right wheel motors encoders
-
-        error = encoderTR - encoderBR;
-    }
-
-    return error;
-}
 
