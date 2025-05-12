@@ -3,13 +3,14 @@
 #include <Arduino.h>
 
 
+template <typename undefinedType>
 class PDRegulator
 {
   private:
 
     float _coefP = 0.0f, _coefD = 0.0f;
     //  Coefficients for the P, and D regulator corrections
-    float _prevError = 0.0f;
+    undefinedType _prevError = 0;
     //  Previous error
 
 
@@ -21,12 +22,12 @@ class PDRegulator
         _coefD = setD;
         //  Reset coefficients
 
-        _prevError = 0.0f;
+        _prevError = 0;
         //  reset previous error
     }
 
 
-    float UpdateCorrection (float error)
+    float UpdateCorrection (undefinedType error)
     {
         float correctionP =  error * _coefP;
         float correctionD = (error - _prevError) * _coefD;

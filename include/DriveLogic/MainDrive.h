@@ -15,7 +15,7 @@ void StartDrive()
     timer.Reset();
 
 
-    PDRegulator rwPD, lwPD, mainPD;
+    PDRegulator<float> rwPD, lwPD, mainPD;
     //  right wheel, left wheel, main robot direction PD regulators for the errors
 
       rwPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
@@ -24,7 +24,7 @@ void StartDrive()
     
 
 
-    while (timer.TimeSeconds(false) < 5)
+    while (timer.TimeFastSeconds(fastReset) < 5)
     {
         float errorTL = driveMotorTL.getCurrentPosition();
         float errorBL = driveMotorBL.getCurrentPosition();
