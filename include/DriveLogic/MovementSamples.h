@@ -57,4 +57,28 @@ void DriveSample(float turnDir, float dirError, float lwError, float rwError)
 }
 
 
+void DriveForwardAlongWall();
 
+void DriveForwardUntilDistance();
+
+void DriveForwardUntilAnyDistance();
+
+void DriveForwardSeconds();
+
+void TurnInMotionByEncoder();
+
+void TurnInMotionByGyro();
+
+void TurnInPlaceByEncoder();
+
+void TurnInPlaceByGyro();
+
+void DriveAndTurnInLineByEncoder();
+
+void DriveAndTurnInLineByGyro();
+
+
+
+void GetCurrentWheelsAngle();
+
+void GetRobotCoordinates();
