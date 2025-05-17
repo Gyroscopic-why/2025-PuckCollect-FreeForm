@@ -8,7 +8,7 @@
 #define MAX_DISTANCE 400
 #define DISTANCE_SENSOR_TIME_OUT (MAX_DISTANCE / SOUND_SPEED) + 2
 
-#define DISTANCE_SENSOR_UPDATE_TIME 6
+#define DISTANCE_SENSOR_UPDATE_TIME 5
 
 class HCSR04_DistanceSensor{
 private:
@@ -16,6 +16,8 @@ private:
     uint32_t _lastUpdateTimer = 0;
     
     uint16_t _lastDistance = 0, _minimumDistance = 0;
+
+    bool _isBegined = false;
 
 public:
     HCSR04_DistanceSensor(uint8_t triggerPin, uint8_t echoPin, uint16_t minimumDistance = 0){
@@ -25,11 +27,19 @@ public:
     }
 
     void begin(){
+        if(_isBegined)
+            return;
+
+        _isBegined = true;
+
         pinMode(_triggerPin, OUTPUT);
         pinMode(_echoPin, INPUT);
     }
 
     uint16_t readDistance(){
+        if(!_isBegined)
+            begin();
+
         if(millis() - _lastUpdateTimer > DISTANCE_SENSOR_UPDATE_TIME){
             digitalWrite(_triggerPin, 1);
             delayMicroseconds(ENABLE_TRIGER_TIMER);

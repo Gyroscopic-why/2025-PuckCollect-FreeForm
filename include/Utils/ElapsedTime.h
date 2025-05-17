@@ -21,10 +21,10 @@ class Timer
     {
         if (alreadyCalculated == 0) 
         {
-            if (resetType = accurateReset) alreadyCalculated = micros();
+            if (resetType == accurateReset) alreadyCalculated = micros();
             else alreadyCalculated = millis() * 1000.0f;
         }
-        else if (resetType == fastReset) alreadyCalculated * 1000.0;
+        else if (resetType == fastReset) alreadyCalculated *= 1000.0f;
 
         _lastMicroseconds = alreadyCalculated;
     }
@@ -49,8 +49,8 @@ class Timer
         uint64_t newMilliseconds = millis();
         
         //  Reset last time save (optional)
-        if  (reset = accurateReset) Reset(reset);
-        else if (reset = fastReset) Reset(fastReset, newMilliseconds);
+        if  (reset == accurateReset) Reset(reset);
+        else if (reset == fastReset) Reset(fastReset, newMilliseconds);
 
         return newMilliseconds * 1000.0f - _lastMicroseconds;
     }
@@ -74,8 +74,8 @@ class Timer
         uint64_t newMilliseconds = millis();
         
         //  Reset last time save (optional)
-        if  (reset = accurateReset) Reset(accurateReset);
-        else if (reset = fastReset) Reset(fastReset, newMilliseconds);
+        if  (reset == accurateReset) Reset(accurateReset);
+        else if (reset == fastReset) Reset(fastReset, newMilliseconds);
         
         return newMilliseconds - _lastMicroseconds / 1000.0f;
     }
@@ -99,8 +99,8 @@ class Timer
         uint64_t newMilliseconds  = millis();
         
         //  Reset last time save (optional)
-        if  (reset = accurateReset) Reset(accurateReset);
-        else if (reset = fastReset) Reset(fastReset, newMilliseconds);
+        if  (reset == accurateReset) Reset(accurateReset);
+        else if (reset == fastReset) Reset(fastReset, newMilliseconds);
     
         
         return  ( newMilliseconds * 1000.0f  -  _lastMicroseconds )  /  1000000.0f;
