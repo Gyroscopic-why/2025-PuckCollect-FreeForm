@@ -41,7 +41,7 @@ void StartDrive()
         float directionError  = mainPD.UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
         //  Main direction of our robot error
         
-        DriveSample(0, directionError, leftWheelError, rightWheelError);
+        Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
         
         
     }

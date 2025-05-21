@@ -11,8 +11,9 @@
 
 
 
-void DriveSample(float turnDir, float dirError, float lwError, float rwError)
+void Drive(float speed, float turnDir, float dirError, float lwError, float rwError)
 {
+    //  speed - max speed for either of the wheels, can be set between -1 and 1 (float)
     //  turnDir  = Turn  in    direction
     //  dirError = error for   the current robot direction
     //  lwError  = left  wheel error
@@ -30,22 +31,22 @@ void DriveSample(float turnDir, float dirError, float lwError, float rwError)
     //  ---  Top Right and Bottom Right motor errors  ---  //
     //  For the drifting of a single wheel 
     //  (proposed to the straight moving of the other wheel)
-
-
     
-    float maxError = max(  max(tlError, blError),  max(trError, brError)  );
-    //  Calculate the max error for maintaining the max speed
+
+    float highestError = max(   max(  abs(tlError), abs(blError)  ),   max(  abs(trError), abs(brError)  )  );
+    highestError *= speed > 0 ? 1 : -1;
+    //  Calculate the max error for maintaining the max set speed (with the sign)
 
 
 
     //-------------  Apply power  ---------------------------------//
 
-    driveMotorTL.setPower( MAX_SPEED - maxError + tlError );
-    driveMotorBL.setPower( MAX_SPEED - maxError + blError );
+    driveMotorTL.setPower( speed - highestError + tlError );
+    driveMotorBL.setPower( speed - highestError + blError );
     //  Left wheel
 
-    driveMotorTR.setPower( MAX_SPEED - maxError + trError );
-    driveMotorBR.setPower( MAX_SPEED - maxError + brError );
+    driveMotorTR.setPower( speed - highestError + trError );
+    driveMotorBR.setPower( speed - highestError + brError );
     //  Right wheel
 
 
