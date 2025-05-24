@@ -9,17 +9,24 @@
 
 #include "Drivers/ColorSensor.h"
 #include "Drivers/DistanceSensor.h"
+#include "Drivers/Button.h"
 
 #include "Drivers/BNO055_Gyroscope.h"
 #include "Drivers/MPU9250_Gyroscope.h"
 
-#include "Drivers/Button.h"
+
+#include "Utils/ElapsedTime.h"
+#include "Utils/MedianFilter.h"
+
+
+#define START_BUTTON_PIN 2
+#define DISPENSER_SERVO_PIN 1
 
 
 
-HardwareWire hardwareWire;
-SoftwareWire softwareWire(2, 3);
-//  ????????????????????????????
+HardwareWire hardwareWire; // 4 and 5 ports by default
+SoftwareWire softwareWire(2, 3); 
+// Our version of an i2c system, custom and slower used for the second color sensor
 
 
 //  Init hardware logic modules
@@ -53,6 +60,7 @@ DcMotor driveMotorBR(&dcExp2port3, 2);
 TCS34725_ColorSensor puckColScanner (&hardwareWire);
 TCS34725_ColorSensor groundColScanner(&softwareWire);
 //  Color sensors - color scanners
+//  Put on separate i2c systems, because 1x i2c bugs and cannot handle 2 color sensors
 
 
 /*  Sonars on the robot
@@ -83,21 +91,26 @@ HCSR04_DistanceSensor  leftSonar(8, 9);
 HCSR04_DistanceSensor  backSonar(10, 11);
 
 
-BNO055_Gyroscope  BN_gyro(&hardwareWire);
-MPU9250_Gyroscope MPU_gyro;
+MedianFilter<uint16_t> frontSonarFilt(0);
+MedianFilter<uint16_t> rightSonarFilt(0);
+MedianFilter<uint16_t>  leftSonarFilt(0);
+MedianFilter<uint16_t>  backSonarFilt(0);
 
 
-Button startButton(2);
+BNO055_Gyroscope  BNO_gyro(&hardwareWire);
+//MPU9250_Gyroscope MPU_gyro(&hardwareWire);
 
+
+Button startButton(START_BUTTON_PIN);
 
 
 Servo dispenser;
 //  Servo responsible for openning the (correct) puck gate
 
 
-void DevicesBegin()
+void BeginDevices()
 {
-    // clampServo.attach(11);
+    // dispenser.attach(DISPENSER_SERVO_PIN);
 
     // puckColScanner.Begin();
     // groundColScanner.Begin();
@@ -107,10 +120,10 @@ void DevicesBegin()
     //  leftSonar.Begin();
     //  backSonar.Begin();
 
-    // gyro.Begin();
+    BNO_gyro.begin();
 
     
-    // softwareWire.begin();
+    softwareWire.begin();
     hardwareWire.begin();
 
 
@@ -134,6 +147,20 @@ void DevicesBegin()
 
 
     brushMotor.begin();
-    splitter.begin();
+      splitter.begin();
     //  Brushes and puck separator
+}
+
+
+Timer deviceUpdateTimer;
+
+void UpdateDevices()
+{
+    if (deviceUpdateTimer.TimeAccurateMicroseconds(accurateReset) > 6)
+    {
+        frontSonarFilt.update(frontSonar.readDistance());
+        rightSonarFilt.update(frontSonar.readDistance());
+         leftSonarFilt.update( leftSonar.readDistance());
+         backSonarFilt.update( backSonar.readDistance());
+    }
 }

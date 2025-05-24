@@ -6,77 +6,75 @@
 #include "../Utils/ElapsedTime.h"
 #include "Devices.h"
 
-#define MAX_SPEED 1.0f
+#include "DriveSample.h"
+
+#define MAX_SPEED 0.5f
 #define ERROR_VALUE_KOEFFICIENT 0.8f
 
 
-
-void Drive(float speed, float turnDir, float dirError, float lwError, float rwError)
+enum SonarPosition
 {
-    //  speed - max speed for either of the wheels, can be set between -1 and 1 (float)
-    //  turnDir  = Turn  in    direction
-    //  dirError = error for   the current robot direction
-    //  lwError  = left  wheel error
-    //  rwError  = right wheel error
+    front,
 
-
-    float tlError = (  lwError + dirError + turnDir )  /  2.0f;
-    float blError = ( -lwError + dirError - turnDir )  /  2.0f;
-    //  ---  Top Left and Bottom Left motor errors  ---  //
-    //  For the drifting of a single wheel 
-    //  (proposed to the straight moving of the other wheel)
-
-    float trError = (  rwError - dirError + turnDir )  /  2.0f;
-    float brError = ( -rwError - dirError - turnDir )  /  2.0f;
-    //  ---  Top Right and Bottom Right motor errors  ---  //
-    //  For the drifting of a single wheel 
-    //  (proposed to the straight moving of the other wheel)
+    right,
+    left,
     
+    back
+};
 
-    float highestError = max(   max(  abs(tlError), abs(blError)  ),   max(  abs(trError), abs(brError)  )  );
-    highestError *= speed > 0 ? 1 : -1;
-    //  Calculate the max error for maintaining the max set speed (with the sign)
+class DriveUntilFrontDistance : public DriveSample
+{
+    float _distance;
 
+public:
+    DriveUntilFrontDistance(PDRegulator<float> &PDreg, float maxDistanceMM) : DriveSample(PDreg)
+    {
+        _distance = maxDistanceMM;
+        coef_p = 1.0f; // нужны норм каэфициенты!
+        coef_d = 1.0f;
+    }
 
+    bool Execute() override
+    { 
+        // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
 
-    //-------------  Apply power  ---------------------------------//
+        if (frontSonarFilt.getCurrentValue() > _distance)
+        {
+            //Drive(forward, PDreg->Update(rightMotor.readCurrentPosition() - leftMotor.readCurrentPosition()));
+            return false;
+        }
 
-    driveMotorTL.setPower( speed - highestError + tlError );
-    driveMotorBL.setPower( speed - highestError + blError );
-    //  Left wheel
+        return true;
+    }
+};
 
-    driveMotorTR.setPower( speed - highestError + trError );
-    driveMotorBR.setPower( speed - highestError + brError );
-    //  Right wheel
+void DriveAlongWall(PDRegulator<float> &PDreg, float holdDistance, SonarPosition sonarPlace);
 
+void DriveUntilFrontDistance(float maxDistanceMM);
 
-    //  Note: 
-    //  - Even though or robot is using a double swerve
-    //    The motors control the movement inverse in reference to the real swerve behaviour:
-    //      ^^ Same wheel motors spin in the same direction      (++ or --)  = forward 1 wheel
-    //      <> Same wheel motors spin in the opposite direction  (+- or -+)  = turning 1 wheel
-}
+void DriveUntilAnyDistance(float maxDistanceMM);
 
+void DriveSeconds(float timeSeconds);
 
-void DriveForwardAlongWall();
+void CurveAddByEncoder(float degrees, float maxDistanceMM = 0);
 
-void DriveForwardUntilDistance();
+void CurveAddByGyro();
 
-void DriveForwardUntilAnyDistance();
+void TurnAddByEncoder();
 
-void DriveForwardSeconds();
+void TurnAddByGyro(float degrees);
 
-void TurnInMotionByEncoder();
+void CurveResetByEncoder();
 
-void TurnInMotionByGyro();
+void CurveResetByGyro(float degrees);
 
-void TurnInPlaceByEncoder();
+void TurnResetByEncoder(float degrees);
 
-void TurnInPlaceByGyro();
+void TurnResetByGyro(float degrees);
 
-void DriveAndTurnInLineByEncoder();
+void DriveTurnInLineByEncoder(float degrees);
 
-void DriveAndTurnInLineByGyro();
+void DriveTurnInLineByGyro(float degrees);
 
 
 

@@ -2,12 +2,12 @@
 #include <Arduino.h>
 
 //DriveTrain
-#define IS_GYRO false
-#define IS_DISTANCE_SENSOR true
-#define WHEEL_DISTANCE 268
+#define HAS_GYROSCOPE false
+#define HAS_SONAR true
+#define WHEEL_DIAMETER 268
 
 #define ROBOT_SPEED 0.3f
-#define ETALON_DISTANCE 20.0f
+//#define ETALON_DISTANCE 20.0f
 
 #define ANGLE_ERROR 2.5f
 #define SINGLE_ENCODER_STEP (20 * 24)
