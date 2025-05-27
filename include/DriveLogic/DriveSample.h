@@ -84,17 +84,33 @@ protected:
         encoderReset();
     }
 
-    PDRegulator<float> *PDreg;
+    PDRegulator<float> *PDmain;
+    PDRegulator<float> *PDlw;
+    PDRegulator<float> *PDrw;
 
 public:
-    float coef_p = 1.0f;
-    float coef_d = 1.0f;
+    float mainReg_p = 1.0f;
+    float mainReg_d = 1.0f;
 
-    DriveSample() {}; // для очереди
+    float lwReg_p = 1.0f;
+    float lwReg_d = 1.0f;
 
-    DriveSample(PDRegulator<float> &PDr)
+    float rwReg_p = 1.0f;
+    float rwReg_d = 1.0f;
+
+
+    DriveSample() {};   //  For the QUEUE system
+
+    DriveSample(PDRegulator<float> &PDRegmain)
     {
-        PDreg = &PDr;
+        PDmain = &PDRegmain;
+    }
+
+    DriveSample(PDRegulator<float> &PDRegmain, PDRegulator<float> &PDReglw, PDRegulator<float> &PDRegrw)
+    {
+        PDmain = &PDRegmain;
+        PDlw = &PDReglw;
+        PDrw = &PDRegrw;
     }
 
     virtual ~DriveSample() {}
@@ -103,7 +119,9 @@ public:
     {
         encoderReset();
 
-        PDreg->Reset(0, 0);
+        PDmain->Reset(0, 0);
+        if (PDlw != nullptr) PDlw->Reset(0, 0);
+        if (PDrw != nullptr) PDrw->Reset(0, 0);
     }
 
     virtual bool Execute()
@@ -113,6 +131,8 @@ public:
 
     void ResetPd()
     {
-        PDreg->Reset(coef_p, coef_d);
+        PDmain->Reset(mainReg_p, mainReg_d);
+        if (PDlw != nullptr) PDlw->Reset(lwReg_p, lwReg_d);
+        if (PDrw != nullptr) PDrw->Reset(rwReg_p, rwReg_d);
     }
 };

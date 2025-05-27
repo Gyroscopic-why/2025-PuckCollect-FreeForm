@@ -134,8 +134,8 @@ class MPU9250_Gyroscope
         float _2q1 = 2.0f * q1;
         float _2q2 = 2.0f * q2;
         float _2q3 = 2.0f * q3;
-        float _2q0q2 = 2.0f * q0 * q2;
-        float _2q2q3 = 2.0f * q2 * q3;
+        //float _2q0q2 = 2.0f * q0 * q2;
+        //float _2q2q3 = 2.0f * q2 * q3;
         float q0q0 = q0 * q0;
         float q0q1 = q0 * q1;
         float q0q2 = q0 * q2;

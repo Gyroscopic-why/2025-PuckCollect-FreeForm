@@ -110,7 +110,7 @@ void InitDrive()
     {
         if (HAS_GYROSCOPE) TurnResetByGyro(45);
 
-        driveAlgorithm.enqueue(new DriveUntilFrontDistance(mainPD, 20));
+        driveAlgorithm.enqueue(new DriveUntilFrontDistance(mainPD, lwPD, rwPD, 20));
 
     }
 }

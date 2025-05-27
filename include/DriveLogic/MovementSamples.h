@@ -9,7 +9,8 @@
 #include "DriveSample.h"
 
 #define MAX_SPEED 0.5f
-#define ERROR_VALUE_KOEFFICIENT 0.8f
+#define ERROR_VALUE_COEFFICIENT 0.8f
+#define CM_TO_FLOAT_COEFFICIENT 0.01f
 
 
 enum SonarPosition
@@ -24,23 +25,50 @@ enum SonarPosition
 
 class DriveUntilFrontDistance : public DriveSample
 {
-    uint8_t _distance;
+
+private:
+    uint16_t _distanceMM;
 
 public:
-    DriveUntilFrontDistance(PDRegulator<float> &PDreg, uint8_t maxDistanceCM) : DriveSample(PDreg)
+    DriveUntilFrontDistance(PDRegulator<float> &PDmain, PDRegulator<float> &PDrw, PDRegulator<float> &PDlw, 
+        uint16_t maxDistanceMM) : DriveSample(PDmain, PDlw, PDrw)
     {
-        _distance = maxDistanceCM;
-        coef_p = 1.0f; // нужны норм каэфициенты!
-        coef_d = 1.0f;
+        //   NEED TO CALIBRATE THIS
+        mainReg_p = 1.0f;
+        mainReg_d = 1.0f;
+
+        lwReg_p = 1.0f;
+        lwReg_d = 1.0;
+
+        rwReg_p = 1.0f;
+        rwReg_d = 1.0f;
+
+
+        _distanceMM = maxDistanceMM;
     }
 
     bool Execute() override
     { 
         // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
 
-        if (frontSonarFilt.getCurrentValue() > _distance)
+        if (frontSonarFilt.getCurrentValue() > _distanceMM)
         {
-            //Drive(forward, PDreg->Update(rightMotor.readCurrentPosition() - leftMotor.readCurrentPosition()));
+            float errorTL = driveMotorTL.getCurrentPosition();
+            float errorBL = driveMotorBL.getCurrentPosition();
+
+            float errorTR = driveMotorTR.getCurrentPosition();
+            float errorBR = driveMotorBR.getCurrentPosition();
+            //  All drive motors errors by encoders
+
+
+            float leftWheelError  = PDrw  ->  UpdateCorrection(errorTL - errorBL);
+            float rightWheelError = PDlw  ->  UpdateCorrection(errorTR - errorBR);
+            //  Individual wheel errors
+
+            float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
+            //  Main direction of our robot error
+
+            Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
             return false;
         }
 
