@@ -24,12 +24,12 @@ enum SonarPosition
 
 class DriveUntilFrontDistance : public DriveSample
 {
-    float _distance;
+    uint8_t _distance;
 
 public:
-    DriveUntilFrontDistance(PDRegulator<float> &PDreg, float maxDistanceMM) : DriveSample(PDreg)
+    DriveUntilFrontDistance(PDRegulator<float> &PDreg, uint8_t maxDistanceCM) : DriveSample(PDreg)
     {
-        _distance = maxDistanceMM;
+        _distance = maxDistanceCM;
         coef_p = 1.0f; // нужны норм каэфициенты!
         coef_d = 1.0f;
     }
@@ -49,8 +49,6 @@ public:
 };
 
 void DriveAlongWall(PDRegulator<float> &PDreg, float holdDistance, SonarPosition sonarPlace);
-
-void DriveUntilFrontDistance(float maxDistanceMM);
 
 void DriveUntilAnyDistance(float maxDistanceMM);
 

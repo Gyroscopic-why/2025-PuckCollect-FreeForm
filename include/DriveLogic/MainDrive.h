@@ -18,84 +18,9 @@
 Queue<DriveSample *> driveAlgorithm;
 Timer timer;
 
-void InitDrive()
-{
-    timer.Reset();
-
-
-    PDRegulator<float> rwPD, lwPD, mainPD;
-    //  right wheel, left wheel, main robot direction PD regulators for the errors
-
-      rwPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
-      lwPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
-    mainPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
-    
-
-
-    while (timer.TimeFastSeconds(fastReset) < 5)
-    {
-        float errorTL = driveMotorTL.getCurrentPosition();
-        float errorBL = driveMotorBL.getCurrentPosition();
-
-        float errorTR = driveMotorTR.getCurrentPosition();
-        float errorBR = driveMotorBR.getCurrentPosition();
-        //  All drive motors errors by encoders
-
-
-        float leftWheelError  =   rwPD.UpdateCorrection(errorTL - errorBL);
-        float rightWheelError =   lwPD.UpdateCorrection(errorTR - errorBR);
-        //  Individual wheel errors
-
-        float directionError  = mainPD.UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
-        //  Main direction of our robot error
-        
-        //Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
-        
-        
-    }
-
-
-    //  Main drive logic test placeholder
-    //  Desabled whilst unfinished
-    if (false)
-    {
-        if (HAS_GYROSCOPE) TurnResetByGyro(45);
-
-        //driveAlgorithm.enqueue(new DriveUntilFrontDistance(mainPD, 750.0f));
-
-    }
-}
-
-void StartDrive()
-{
-    timer.Reset();
-
-    if (!driveAlgorithm.isEmpty())
-        driveAlgorithm.front()->Start();
-}
-
-void UpdateDrive()
-{
-    if (driveAlgorithm.isEmpty()) return;
-
-
-    // прерывание по времени
-    if (driveAlgorithm.front()->Execute() || (EXECUTION_LIMIT - timer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
-    { 
-        delete driveAlgorithm.frontAndDequeue();
-
-        if (!driveAlgorithm.isEmpty())
-        {
-            driveAlgorithm.front()->Start();
-            driveAlgorithm.front()->ResetPd();
-        }
-    }
-}
-
-
 
 ////  TEMPORARY 
-void Drive(float speed, float turnDir, float dirError, float lwError, float rwError)
+static void Drive(float speed, float turnDir, float dirError, float lwError, float rwError)
 {
     //  speed - max speed for either of the wheels, can be set between -1 and 1 (float)
     //  turnDir  = Turn  in    direction
@@ -139,4 +64,79 @@ void Drive(float speed, float turnDir, float dirError, float lwError, float rwEr
     //    The motors control the movement inverse in reference to the real swerve behaviour:
     //      ^^ Same wheel motors spin in the same direction      (++ or --)  = forward 1 wheel
     //      <> Same wheel motors spin in the opposite direction  (+- or -+)  = turning 1 wheel
+}
+
+
+
+void InitDrive()
+{
+    timer.Reset();
+
+
+    PDRegulator<float> rwPD, lwPD, mainPD;
+    //  right wheel, left wheel, main robot direction PD regulators for the errors
+
+      rwPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
+      lwPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
+    mainPD.Reset(P_STOCK_COEFFICIENT, D_STOCK_COEFFICIENT);
+    
+
+
+    while (timer.TimeFastSeconds(fastReset) < 5)
+    {
+        float errorTL = driveMotorTL.getCurrentPosition();
+        float errorBL = driveMotorBL.getCurrentPosition();
+
+        float errorTR = driveMotorTR.getCurrentPosition();
+        float errorBR = driveMotorBR.getCurrentPosition();
+        //  All drive motors errors by encoders
+
+
+        float leftWheelError  =   rwPD.UpdateCorrection(errorTL - errorBL);
+        float rightWheelError =   lwPD.UpdateCorrection(errorTR - errorBR);
+        //  Individual wheel errors
+
+        float directionError  = mainPD.UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
+        //  Main direction of our robot error
+        
+        Drive(MAX_SPEED, 0.0f, directionError, leftWheelError, rightWheelError);
+      
+    }
+
+
+    //  Main drive logic test placeholder
+    //  Desabled whilst unfinished
+    if (false)
+    {
+        if (HAS_GYROSCOPE) TurnResetByGyro(45);
+
+        driveAlgorithm.enqueue(new DriveUntilFrontDistance(mainPD, 20));
+
+    }
+}
+
+void StartDrive()
+{
+    timer.Reset();
+
+    if (!driveAlgorithm.isEmpty())
+        driveAlgorithm.front()->Start();
+}
+
+void UpdateDrive()
+{
+    if (driveAlgorithm.isEmpty()) return;
+
+
+    // прерывание по времени
+    if (driveAlgorithm.front()->Execute() || (EXECUTION_LIMIT - timer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
+    { 
+        delete driveAlgorithm.frontAndDequeue();
+
+        if (!driveAlgorithm.isEmpty())
+        {
+            driveAlgorithm.front()->Start();
+            driveAlgorithm.front()->ResetPd();
+        }
+    }
 }

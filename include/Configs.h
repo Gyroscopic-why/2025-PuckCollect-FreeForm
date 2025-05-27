@@ -38,3 +38,6 @@
 #define BRUSH_MOTOR_POWER 0.5f
 
 #define BRUSH_DEFEND_TIMER 1.0f
+
+//median filter
+#define DEFAULT_MEDIAN_BUFFER_LENGHT 5
