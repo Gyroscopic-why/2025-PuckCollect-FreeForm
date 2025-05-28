@@ -24,7 +24,6 @@ class Timer
             if (resetType == accurateReset) alreadyCalculated = micros();
             else alreadyCalculated = millis() * 1000.0f;
         }
-        else if (resetType == fastReset) alreadyCalculated *= 1000.0f;
 
         _lastMicroseconds = alreadyCalculated;
     }
@@ -35,75 +34,94 @@ class Timer
     uint64_t TimeAccurateMicroseconds(ResetState reset)
     {
         //  Calculate delta time (elapsed)
-        uint64_t newMicroseconds = micros();
+        uint64_t deltaMicroseconds = micros() - _lastMicroseconds;
         
         //  Reset last time save (optional)
-        if (reset) Reset(accurateReset, newMicroseconds);
+        if (reset) Reset(accurateReset, deltaMicroseconds);
 
-        return newMicroseconds - _lastMicroseconds;
+
+        return deltaMicroseconds;
     }
 
     uint64_t TimeFastMicroseconds(ResetState reset)
     {
         //  Calculate delta time (elapsed)
-        uint64_t newMilliseconds = millis();
+        uint64_t deltaMicroseconds = millis() * 1000.0f - _lastMicroseconds;
         
         //  Reset last time save (optional)
         if  (reset == accurateReset) Reset(reset);
-        else if (reset == fastReset) Reset(fastReset, newMilliseconds);
+        else if (reset == fastReset) Reset(fastReset, deltaMicroseconds + _lastMicroseconds);
 
-        return newMilliseconds * 1000.0f - _lastMicroseconds;
+
+        return deltaMicroseconds;
     }
 
     
 
+
     float TimeAccurateMilliseconds(ResetState reset)
     {
         //  Calculate delta time (elapsed)
-        uint64_t newMicroseconds = micros();
+        uint64_t deltaMicroseconds = micros() - _lastMicroseconds;
         
         //  Reset last time save (optional)
-        if  (reset) Reset(accurateReset, newMicroseconds);
+        if  (reset) Reset(accurateReset, deltaMicroseconds + _lastMicroseconds);
         
-        return ( newMicroseconds - _lastMicroseconds )   /   1000.0f;
+
+        //  Transform McrS to MS
+        uint64_t elapsedMilliseconds = deltaMicroseconds / 1000.0f;
+
+        return elapsedMilliseconds;
     }
 
     float TimeFastMilliseconds(ResetState reset)
     {
         //  Calculate delta time (elapsed)
-        uint64_t newMilliseconds = millis();
+        uint64_t deltaMicroseconds = millis() * 1000.0f - _lastMicroseconds;
         
         //  Reset last time save (optional)
         if  (reset == accurateReset) Reset(accurateReset);
-        else if (reset == fastReset) Reset(fastReset, newMilliseconds);
+        else if (reset == fastReset) Reset(fastReset, deltaMicroseconds + _lastMicroseconds);
         
-        return newMilliseconds - _lastMicroseconds / 1000.0f;
+        
+        //  Transform McrS to MS
+        uint64_t elapsedMilliseconds = deltaMicroseconds / 1000.0f;
+
+        return elapsedMilliseconds;
     }
     
+
 
 
     float TimeAccurateSeconds(ResetState reset)
     {
         //  Calculate delta time (elapsed)
-        uint64_t newMicroseconds = micros();
+        uint64_t deltaMicroseconds = micros() - _lastMicroseconds;
         
         //  Reset last time save (optional)
-        if  (reset) Reset(accurateReset, newMicroseconds);
+        if  (reset) Reset(accurateReset, deltaMicroseconds + _lastMicroseconds);
         
-        return ( newMicroseconds - _lastMicroseconds ) / 1000000.0f;
+
+        //  Transform MS to Sec
+        uint64_t elapsedSeconds = deltaMicroseconds / 1000000.0f;
+
+        return elapsedSeconds;
     }
 
     float TimeFastSeconds(ResetState reset)
     {
         //  Calculate delta time (elapsed)
-        uint64_t newMilliseconds  = millis();
+        uint64_t deltaMicroseconds = millis() * 1000.0f - _lastMicroseconds;
         
         //  Reset last time save (optional)
         if  (reset == accurateReset) Reset(accurateReset);
-        else if (reset == fastReset) Reset(fastReset, newMilliseconds);
-    
+        else if (reset == fastReset) Reset(fastReset, deltaMicroseconds + _lastMicroseconds);
         
-        return  ( newMilliseconds * 1000.0f  -  _lastMicroseconds )  /  1000000.0f;
+
+        //  Transform MS to Sec
+        uint64_t elapsedSeconds = deltaMicroseconds / 1000000.0f;
+        
+        return elapsedSeconds;
     }
     
 };
