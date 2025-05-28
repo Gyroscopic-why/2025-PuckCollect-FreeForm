@@ -108,9 +108,9 @@ void InitDrive()
     //  Desabled whilst unfinished
     if (false)
     {
-        if (HAS_GYROSCOPE) TurnResetByGyro(45);
+        if (HAS_GYROSCOPE) TurnResetGyro(45);
 
-        driveAlgorithm.enqueue(new DriveUntilFrontDistance(mainPD, lwPD, rwPD, 20));
+        driveAlgorithm.enqueue(new ForwardUntilFrontDistance(mainPD, lwPD, rwPD, 20));
 
     }
 }
