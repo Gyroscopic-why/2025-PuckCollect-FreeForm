@@ -26,11 +26,11 @@ enum ZeroPowerBehavior
     BRAKE = true
 };
 
-enum Direction
-{
-    FORWARD = false,
-    REVERSE = true
-};
+// enum MotorDirection
+// {
+//     FORWARD = false,
+//     REVERSE = true
+// };
 
 class DcExpansion
 {

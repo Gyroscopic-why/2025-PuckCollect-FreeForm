@@ -8,10 +8,12 @@
 
 #include "DriveSample.h"
 
+
 #define MAX_SPEED 0.5f
 #define ERROR_VALUE_COEFFICIENT 0.8f
 #define CM_TO_FLOAT_COEFFICIENT 0.01f
 
+Timer driveTimer;
 
 enum SonarPosition
 {
@@ -22,6 +24,8 @@ enum SonarPosition
     
     back
 };
+
+
 
 /*
  *   Naming logic here:
@@ -231,11 +235,69 @@ public:
 };
 
 
+class DriveMS                   : public DriveSample
+{
+private:
+    float _timeMS;
+    Direction _driveDirection;
+    
+public:
+    DriveMS(PDRegulator<float> &PDmain, PDRegulator<float> &PDlw, PDRegulator<float> &PDrw, 
+        float timeMS, TimerUsage &driveTimerUsageTemp, Direction driveDirection = forward) : DriveSample(PDmain, PDlw, PDrw)
+    {
+        //   NEED TO CALIBRATE THIS
+        mainReg_p = 1.0f;
+        mainReg_d = 1.0f;
+
+        lwReg_p = 1.0f;
+        lwReg_d = 1.0;
+
+        rwReg_p = 1.0f;
+        rwReg_d = 1.0f;
+
+
+        _timeMS = timeMS;
+        _driveDirection = driveDirection;
+
+        if (!driveTimerUsageTemp) driveTimerUsageTemp = startUse;
+        else driveTimerUsageTemp = activeUse;
+    }
+
+    bool Execute() override
+    { 
+        // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
+
+        if (driveTimer.TimeFastMilliseconds(dontReset) < _timeMS)
+        {
+            float errorTL = driveMotorTL.getCurrentPosition();
+            float errorBL = driveMotorBL.getCurrentPosition();
+
+            float errorTR = driveMotorTR.getCurrentPosition();
+            float errorBR = driveMotorBR.getCurrentPosition();
+            //  All drive motors errors by encoders
+
+
+            float leftWheelError  = PDrw  ->  UpdateCorrection(errorTL - errorBL);
+            float rightWheelError = PDlw  ->  UpdateCorrection(errorTR - errorBR);
+            //  Individual wheel errors
+
+            float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
+            //  Main direction of our robot error
+
+            if (_driveDirection == forward) Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
+            else Drive(-MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
+
+            return false;
+        }
+
+        return true;
+    }
+};
+
 
 
 void DriveAlongWall(PDRegulator<float> &PDreg, float holdDistance, SonarPosition sonarPlace);
 
-void DriveSeconds(float timeSeconds);
 
 
 
@@ -250,6 +312,10 @@ void TurnAddGyro(float degrees);
 void TurnResetEncoder(float degrees);
 
 void TurnResetGyro(float degrees);
+
+
+
+void TurnOnlyWheelsEncoder (float degrees);
 
 
 
@@ -273,11 +339,27 @@ void TryReturnToBaseGyro   ();
 
 
 
-void BlockEnemyBase    ();
+void BlockEnemyBase   ();
 
 void TryBlockEnemyBase();
 
 
-void GetCurrentWheelsAngle();
 
-void GetRobotCoordinates();
+void CalibrateRobotCoordinates ();
+
+void CalibrateRobotRotation    ();
+
+void GetCurrentRobotCoordinates();
+
+void GetCurrentRobotRotation   ();
+
+
+void UpdateGameMap();
+
+void CalculateBestDirection();
+
+void TransformPredictionsToMovements();
+
+
+
+void GetWheelsRotation();

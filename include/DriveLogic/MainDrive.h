@@ -11,12 +11,14 @@
 
 #include "Configs.h"
 
-#define P_STOCK_COEFFICIENT 0.8f
-#define D_STOCK_COEFFICIENT 2.0f
+#define P_STOCK_COEFFICIENT 1.0f
+#define D_STOCK_COEFFICIENT 1.0f
 
 
 Queue<DriveSample *> driveAlgorithm;
-Timer timer;
+Timer mainTimer;
+TimerUsage driveTimerUsage = idle;
+
 
 
 ////  TEMPORARY 
@@ -70,7 +72,7 @@ static void Drive(float speed, float turnDir, float dirError, float lwError, flo
 
 void InitDrive()
 {
-    timer.Reset();
+    mainTimer.Reset();
 
 
     PDRegulator<float> rwPD, lwPD, mainPD;
@@ -82,7 +84,7 @@ void InitDrive()
     
 
 
-    while (timer.TimeFastSeconds(fastReset) < 5)
+    while (mainTimer.TimeFastSeconds(fastReset) < 5)
     {
         float errorTL = driveMotorTL.getCurrentPosition();
         float errorBL = driveMotorBL.getCurrentPosition();
@@ -115,9 +117,11 @@ void InitDrive()
     }
 }
 
+
+
 void StartDrive()
 {
-    timer.Reset();
+    mainTimer.Reset();
 
     if (!driveAlgorithm.isEmpty())
         driveAlgorithm.front()->Start();
@@ -125,18 +129,41 @@ void StartDrive()
 
 void UpdateDrive()
 {
-    if (driveAlgorithm.isEmpty()) return;
+    //if (driveAlgorithm.isEmpty()) return;
 
 
-    // прерывание по времени
-    if (driveAlgorithm.front()->Execute() || (EXECUTION_LIMIT - timer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
-    { 
-        delete driveAlgorithm.frontAndDequeue();
+    // //  Exiting the loop by queue end or time limit
+    // if (driveAlgorithm.front()->Execute() || (EXECUTION_LIMIT - mainTimer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
+    // { 
+    //     delete driveAlgorithm.frontAndDequeue();
 
-        if (!driveAlgorithm.isEmpty())
+    //     if (!driveAlgorithm.isEmpty())
+    //     {
+    //         if (driveTimerUsage == startUse) driveTimer.Reset(accurateReset);
+
+    //         driveAlgorithm.front()->Start();
+    //         driveAlgorithm.front()->ResetPd();
+    //     }
+
+    //     //  Reset timer usage after a movement has ended
+    //     else driveTimerUsage = idle;
+        
+    // }
+
+    if (!driveAlgorithm.isEmpty() && (EXECUTION_LIMIT - mainTimer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
+    {
+        if (driveTimerUsage == startUse) driveTimer.Reset(accurateReset);
+    
+        driveAlgorithm.front()->Start();
+        driveAlgorithm.front()->ResetPd();
+
+    
+        //  .Execute()  will return true if the movement is finished
+        if (driveAlgorithm.front()->Execute()) 
         {
-            driveAlgorithm.front()->Start();
-            driveAlgorithm.front()->ResetPd();
+            delete driveAlgorithm.frontAndDequeue();
+            driveTimerUsage = idle;
         }
     }
+
 }

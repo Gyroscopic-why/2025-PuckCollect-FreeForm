@@ -7,15 +7,27 @@
 #include "utils/Sign.h"
 #include "utils/ElapsedTime.h"
 
+
+enum Direction
+{
+    forward,
+    stop,
+    backward
+};
+
+
+enum TimerUsage
+{
+    activeUse = true,
+    startUse  = true,
+    idle      = false
+};
+
+
+
 class DriveSample
 {
 protected:
-    enum Direction
-    {
-        backward = -1,
-        stop = 0,
-        forward = 1
-    };
 
     void Drive(float speed, float turnDir, float dirError, float lwError, float rwError)
     {
