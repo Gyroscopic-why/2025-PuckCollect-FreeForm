@@ -11,7 +11,7 @@
 
 #define MAX_SPEED 0.5f
 #define ERROR_VALUE_COEFFICIENT 0.8f
-#define CM_TO_FLOAT_COEFFICIENT 0.01f
+#define DEGREES_TO_DRIVEPOWER_COEFFICIENT 0.01f
 
 Timer driveTimer;
 
@@ -122,6 +122,7 @@ public:
             return false;
         }
 
+        dropProcess();
         return true;
     }
 };
@@ -175,6 +176,7 @@ public:
             return false;
         }
 
+        dropProcess();
         return true;
     }
 };
@@ -230,6 +232,7 @@ public:
             return false;
         }
 
+        dropProcess();
         return true;
     }
 };
@@ -290,6 +293,7 @@ public:
             return false;
         }
 
+        dropProcess();
         return true;
     }
 };
@@ -305,11 +309,84 @@ void CurveAddEncoder(float degrees, float maxDistanceMM = 0);
 
 void CurveAddGyro();
 
-void TurnAddEncoder();
+
+class TurnAddEncoder : public DriveSample
+{
+private:
+    float _degrees;
+
+public:
+    TurnAddEncoder(PDRegulator<float> &PDmain, PDRegulator<float> &PDlw, PDRegulator<float> &PDrw, 
+        float &degrees) : DriveSample(PDmain, PDlw, PDrw)
+    {
+        //   NEED TO CALIBRATE THIS
+        mainReg_p = 1.0f;
+        mainReg_d = 1.0f;
+
+        lwReg_p = 1.0f;
+        lwReg_d = 1.0;
+
+        rwReg_p = 1.0f;
+        rwReg_d = 1.0f;
+
+
+        _degrees = degrees;
+         degrees -= MAX_SPEED * MAX_SPEED * DEGREES_TO_DRIVEPOWER_COEFFICIENT;
+    }
+
+    bool Execute() override
+    { 
+        // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
+
+        if ( MAX_SPEED * MAX_SPEED * DEGREES_TO_DRIVEPOWER_COEFFICIENT < abs(_degrees) )
+        {
+            float errorTL = driveMotorTL.getCurrentPosition();
+            float errorBL = driveMotorBL.getCurrentPosition();
+
+            float errorTR = driveMotorTR.getCurrentPosition();
+            float errorBR = driveMotorBR.getCurrentPosition();
+            //  All drive motors errors by encoders
+
+
+            float leftWheelError  = PDrw  ->  UpdateCorrection(errorTL - errorBL);
+            float rightWheelError = PDlw  ->  UpdateCorrection(errorTR - errorBR);
+            //  Individual wheel errors
+
+            float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
+            //  Main direction of our robot error
+            
+
+            _degrees *= DEGREES_TO_DRIVEPOWER_COEFFICIENT;
+            if (_degrees > 1.0f) _degrees = 1.0f;
+            else if (_degrees < 1.0f) _degrees = -1.0f;
+            //  Calculate turn (simplified)
+
+            float CurrentAngle = (WHEEL_DIAMETER * PI) / SINGLE_ENCODER_STEP * (errorTL + errorBL);
+
+            float angle = (Angle / DISTANCE_BETWEEN_WHEELS) / PI * 180;
+            angle = chopDegrees(angle);
+
+
+            float deltaDegrees = chopDegrees(_degrees - angle);
+            
+
+            if (abs(error) > ANGLE_ERROR)
+            {
+                Drive(stop, ROBOT_SPEED * sgn(error));
+                return false;
+            }
+
+
+            Drive(MAX_SPEED, _degrees, directionError, leftWheelError, rightWheelError);
+            return false;
+        }
+
+        dropProcess();
+        return true;
+    }
+};
 
 void TurnAddGyro(float degrees);
-
-void TurnResetEncoder(float degrees);
 
 void TurnResetGyro(float degrees);
 

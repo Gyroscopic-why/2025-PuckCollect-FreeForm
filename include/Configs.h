@@ -39,5 +39,10 @@
 
 #define BRUSH_DEFEND_TIMER 1.0f
 
-//median filter
+//  For the median filter
 #define DEFAULT_MEDIAN_BUFFER_LENGHT 5
+
+
+//  Robot parameters
+#define WHEEL_DIAMETER 
+#define DISTANCE_BETWEEN_WHEELS
