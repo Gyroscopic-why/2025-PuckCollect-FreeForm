@@ -17,7 +17,6 @@
 
 Queue<DriveSample *> driveAlgorithm;
 Timer mainTimer;
-TimerUsage driveTimerUsage = idle;
 
 
 
@@ -101,7 +100,7 @@ void InitDrive()
         float directionError  = mainPD.UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
         //  Main direction of our robot error
         
-        Drive(MAX_SPEED, 0.0f, directionError, leftWheelError, rightWheelError);
+        Drive(MAX_DRIVE_POWER, 0.0f, directionError, leftWheelError, rightWheelError);
       
     }
 
@@ -123,46 +122,32 @@ void StartDrive()
 {
     mainTimer.Reset();
 
-    if (!driveAlgorithm.isEmpty())
+    if ( !driveAlgorithm.isEmpty() )
+    {
         driveAlgorithm.front()->Start();
+        driveAlgorithm.front()->ResetPd();
+    }
 }
 
 void UpdateDrive()
 {
-    //if (driveAlgorithm.isEmpty()) return;
+    //  Executing the current movement (in the 'if' statement), without reinitialising it
 
+    if ( driveAlgorithm.front()->Execute() && (  EXECUTION_LIMIT - mainTimer.TimeAccurateSeconds(dontReset)  ) > 0  )
+    {   //  .Execute()  will return true if the movement is finished
 
-    // //  Exiting the loop by queue end or time limit
-    // if (driveAlgorithm.front()->Execute() || (EXECUTION_LIMIT - mainTimer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
-    // { 
-    //     delete driveAlgorithm.frontAndDequeue();
+        delete driveAlgorithm.frontAndDequeue();
 
-    //     if (!driveAlgorithm.isEmpty())
-    //     {
-    //         if (driveTimerUsage == startUse) driveTimer.Reset(accurateReset);
-
-    //         driveAlgorithm.front()->Start();
-    //         driveAlgorithm.front()->ResetPd();
-    //     }
-
-    //     //  Reset timer usage after a movement has ended
-    //     else driveTimerUsage = idle;
-        
-    // }
-
-    if (!driveAlgorithm.isEmpty() && (EXECUTION_LIMIT - mainTimer.TimeAccurateSeconds(dontReset)) > TIME_ERROR)
-    {
-        if (driveTimerUsage == startUse) driveTimer.Reset(accurateReset);
-    
-        driveAlgorithm.front()->Start();
-        driveAlgorithm.front()->ResetPd();
-
-    
-        //  .Execute()  will return true if the movement is finished
-        if (driveAlgorithm.front()->Execute()) 
+        //  If the are still moves left
+        if ( !driveAlgorithm.isEmpty() ) 
         {
-            delete driveAlgorithm.frontAndDequeue();
-            driveTimerUsage = idle;
+            driveAlgorithm.front()->Start();
+            driveAlgorithm.front()->ResetPd();
+            //  Initialize next movement
+
+            //  -> If the movement is "DriveMS" 
+            //     the drive timer will be used (reset once inside the sample)
+            //  No need to keep the usage state since .Start() is called only once
         }
     }
 

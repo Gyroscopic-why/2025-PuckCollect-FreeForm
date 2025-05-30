@@ -8,11 +8,6 @@
 
 #include "DriveSample.h"
 
-
-#define MAX_SPEED 0.5f
-#define ERROR_VALUE_COEFFICIENT 0.8f
-#define DEGREES_TO_DRIVEPOWER_COEFFICIENT 0.01f
-
 Timer driveTimer;
 
 enum SonarPosition
@@ -118,7 +113,7 @@ public:
             float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
             //  Main direction of our robot error
 
-            Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
+            Drive(MAX_DRIVE_POWER, 0, directionError, leftWheelError, rightWheelError);
             return false;
         }
 
@@ -172,7 +167,7 @@ public:
             float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
             //  Main direction of our robot error
 
-            Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
+            Drive(MAX_DRIVE_POWER, 0, directionError, leftWheelError, rightWheelError);
             return false;
         }
 
@@ -228,7 +223,7 @@ public:
             float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
             //  Main direction of our robot error
 
-            Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
+            Drive(MAX_DRIVE_POWER, 0, directionError, leftWheelError, rightWheelError);
             return false;
         }
 
@@ -246,7 +241,7 @@ private:
     
 public:
     DriveMS(PDRegulator<float> &PDmain, PDRegulator<float> &PDlw, PDRegulator<float> &PDrw, 
-        float timeMS, TimerUsage &driveTimerUsageTemp, Direction driveDirection = forward) : DriveSample(PDmain, PDlw, PDrw)
+        float timeMS, Direction driveDirection = forward) : DriveSample(PDmain, PDlw, PDrw)
     {
         //   NEED TO CALIBRATE THIS
         mainReg_p = 1.0f;
@@ -262,13 +257,12 @@ public:
         _timeMS = timeMS;
         _driveDirection = driveDirection;
 
-        if (!driveTimerUsageTemp) driveTimerUsageTemp = startUse;
-        else driveTimerUsageTemp = activeUse;
+        driveTimer.Reset(accurateReset);
     }
 
     bool Execute() override
     { 
-        // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
+        //  Encoders and PDReg are already initilized, now we just use them
 
         if (driveTimer.TimeFastMilliseconds(dontReset) < _timeMS)
         {
@@ -287,8 +281,8 @@ public:
             float directionError  = PDmain -> UpdateCorrection(errorTL + errorBL - errorTR - errorBR);
             //  Main direction of our robot error
 
-            if (_driveDirection == forward) Drive(MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
-            else Drive(-MAX_SPEED, 0, directionError, leftWheelError, rightWheelError);
+            if (_driveDirection == forward) Drive(MAX_DRIVE_POWER, 0, directionError, leftWheelError, rightWheelError);
+            else Drive(-MAX_DRIVE_POWER, 0, directionError, leftWheelError, rightWheelError);
 
             return false;
         }
@@ -331,14 +325,14 @@ public:
 
 
         _degrees = degrees;
-         degrees -= MAX_SPEED * MAX_SPEED * DEGREES_TO_DRIVEPOWER_COEFFICIENT;
+         degrees -= MAX_DRIVE_POWER * MAX_DRIVE_POWER * DEGREES_TO_DRIVEPOWER_COEFFICIENT;
     }
 
     bool Execute() override
     { 
         // энкодеры сбрасываются, все норм. ПД тоже сбрасывается
 
-        if ( MAX_SPEED * MAX_SPEED * DEGREES_TO_DRIVEPOWER_COEFFICIENT < abs(_degrees) )
+        if ( abs(_degrees) > MAX_TURN_ERROR_DEGREES_FOR_ENCODER_TURN )
         {
             float errorTL = driveMotorTL.getCurrentPosition();
             float errorBL = driveMotorBL.getCurrentPosition();
@@ -356,28 +350,21 @@ public:
             //  Main direction of our robot error
             
 
-            _degrees *= DEGREES_TO_DRIVEPOWER_COEFFICIENT;
-            if (_degrees > 1.0f) _degrees = 1.0f;
-            else if (_degrees < 1.0f) _degrees = -1.0f;
-            //  Calculate turn (simplified)
-
-            float CurrentAngle = (WHEEL_DIAMETER * PI) / SINGLE_ENCODER_STEP * (errorTL + errorBL);
-
-            float angle = (Angle / DISTANCE_BETWEEN_WHEELS) / PI * 180;
-            angle = chopDegrees(angle);
 
 
-            float deltaDegrees = chopDegrees(_degrees - angle);
-            
+            float CurrentAngle = (WHEEL_DIAMETER * PI) / ROBOT_TURN_STEP * (errorTL + errorBL - errorTR - errorBR);
+            //  Calculate turn power from
 
-            if (abs(error) > ANGLE_ERROR)
-            {
-                Drive(stop, ROBOT_SPEED * sgn(error));
-                return false;
-            }
+            CurrentAngle = CurrentAngle / PI * 180;
+            //  Convert angle to degrees
 
+            float deltaAngle = chopDegrees(_degrees - CurrentAngle);
+            //  Calculate the delta turn, ranges between -180 and 180
 
-            Drive(MAX_SPEED, _degrees, directionError, leftWheelError, rightWheelError);
+            deltaAngle *= DEGREES_TO_DRIVEPOWER_COEFFICIENT;
+            //  Transform turn from degrees to power for the motors
+
+            Drive(MAX_DRIVE_POWER, _degrees, directionError, leftWheelError, rightWheelError);
             return false;
         }
 

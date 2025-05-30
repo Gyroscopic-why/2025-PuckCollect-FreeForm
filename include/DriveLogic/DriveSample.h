@@ -16,14 +16,6 @@ enum Direction
 };
 
 
-enum TimerUsage
-{
-    activeUse = true,
-    startUse  = true,
-    idle      = false
-};
-
-
 
 class DriveSample
 {
